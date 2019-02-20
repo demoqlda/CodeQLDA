@@ -1,0 +1,321 @@
+#include <iostream>
+#include <cctype>
+#include <string>
+#include <math.h>
+#include <stack>
+
+using namespace std;
+
+int getWeight(char ch) {
+	switch (ch) {
+	case '^': return 3;
+	case '/':
+	case '*': return 2;
+	case '+':
+	case '-': return 1;
+	default: return 0;
+	}
+}
+
+bool CheckErr(const string & infix){
+	char ch, ch1;
+	if ((infix[0] != 'x'&&infix[0] != 'y'&&infix[0] != 'z')|| infix[1] != '=' ||infix[2] == '*' || infix[2] == '/' || infix[2] == '^')
+	{
+		return false;
+	}
+		for (unsigned i = 0; i <infix.length(); i++)
+		{
+			unsigned int a = infix.length();
+			ch = infix[i];
+			ch1 = infix[i + 1];
+			
+			if ((ch == 'x' || ch == 'y' || ch == 'z') && isdigit(ch1))
+			
+			{
+				return false;
+				break;
+			}
+			if (isdigit(ch) && (ch1 == 'x' || ch1 == 'y' || ch1 == 'z'))
+			{
+				return false;
+				break;
+			}
+			
+	
+			if ((getWeight(ch) != 0) && (ch1 == ')' || ch1 == ']' || ch1 == '}'))
+			{
+				return false;
+				break;
+			}
+			if ((ch == '(' || ch == '[' || ch == '{') && (getWeight(ch1) != 0))
+			{
+				return false;
+				break;
+			}
+			
+			if (isdigit(ch) && (ch1 == '(' || ch1 == '[' || ch1 == '{'))
+			{
+				return false;
+				break;
+			}
+			if ((ch=='x' || ch=='y' || ch=='z') && (ch1 == '(' || ch1 == '[' || ch1 == '{'))
+			{
+				return false;
+				break;
+			}
+			
+			if (getWeight(infix[a - 1]) != 0)
+			{
+				return false;
+				break;
+			}
+		
+			if (ch != 'x'&&ch != 'y'&&ch != 'z'&&ch != '('&&ch != '{'&&ch != '['&&ch != ')'&&ch != '}'&&ch != ']'&&ch != '+'&&ch != '-'&&ch != '*'&&ch != '/'&&ch != '^'&&ch != '='&&!isdigit(ch))
+			{
+				return false;
+				break;
+			}
+			if (getWeight(ch) != 0 && getWeight(ch1) != 0)
+			{
+				return false;
+				break;
+			}
+		}	
+	
+	return true;
+}
+
+
+
+bool KiemTraXauNgoac(string str, stack<char> a)
+{
+	for (unsigned int i = 0; i<str.size(); i++)
+	{
+		if (str[i] == '(' || str[i] == '[' || str[i] == '{')
+		{
+			a.push(str[i]);
+		}
+		else if (str[i] == ')' || str[i] == ']' || str[i] == '}')
+		{
+			if (a.empty() == false)
+			{
+				if (str[i] == ']')
+				{
+					if (a.top() != '[')
+					{
+
+					
+						return false;
+					}
+				}
+				if (str[i] == ')')
+				{
+					if (a.top() != '(')
+					{
+					
+						return false;
+					}
+				}
+				if (str[i] == '}')
+				{
+					if (a.top() != '{')
+					{
+			
+						return false;
+					}
+				}
+				a.pop();
+			}
+			else
+			{
+
+				return false;
+			}
+		}
+	}
+	return a.empty() == true;
+}
+
+
+string InfixToPostfix(const string & infix) {
+	
+	stack<char> stack;
+	string postfix = "";
+	unsigned int i = 2;
+	char ch;
+	
+	while (i < infix.length()) {
+		ch = infix[i];
+		if (ch == '(' || ch == '[' || ch == '{') {
+			stack.push(ch);
+			i++;
+			continue;
+		}
+		if (ch == ')' || ch == ']' || ch == '}') {
+			while (stack.top() != '(' && stack.top() != '[' && stack.top() != '{') {
+				postfix += stack.top();
+				stack.pop();
+			
+			}
+			stack.pop();
+			i++;
+			continue;
+		}
+		 
+		if (getWeight(ch) == 0) {
+			postfix += ch;
+		}
+		else {
+			if (stack.empty()) {
+				stack.push(ch);
+			}
+			else {
+
+				while (!stack.empty() && stack.top() != '('&& stack.top() != '['&& stack.top() != '{' && getWeight(ch) <= getWeight(stack.top())) {
+					postfix += stack.top();
+					stack.pop();
+				}
+				stack.push(ch);
+			}
+		}
+		i++;
+	}
+	while (!stack.empty()) {
+		postfix += stack.top();
+		stack.pop();
+		
+	}
+	return postfix;
+	
+
+}
+
+
+double eval(double op1, double op2, char operate) {
+	switch (operate) {
+	case '*': return op2 * op1;
+	case '^': return pow(op2, op1);
+	case '/': return op2 / op1;
+	case '+': return op2 + op1;
+	case '-': return op2 - op1;
+	default: return 0;
+	}
+
+}
+
+
+double evalPostfix(double a, double b, double c, const string & postfix) {
+	stack<double> stack;
+	unsigned int i = 0;
+	char ch;
+	if(postfix.length()==1){
+		if (postfix[0]=='x')
+		{
+			stack.push(a);
+		}
+		if (postfix[0]=='y')
+		{
+			stack.push(b);
+		}
+		if (postfix[0]=='z')
+		{
+			stack.push(c);
+		}
+	}else{
+		while (i < postfix.length()) {
+			ch = postfix[i];
+			if (ch == 'x') {
+				stack.push(a);
+				i++;
+				continue;
+			}
+			if (ch == 'y') {
+				stack.push(b);
+				i++;
+				continue;
+			}
+			if (ch == 'z') {
+				stack.push(c);
+				i++;
+				continue;
+			}
+			
+			if (isdigit(ch)){
+				stack.push(ch - 48);
+				i++;
+				continue;
+			}
+			else {
+				double op1 = stack.top();
+				stack.pop();
+				double op2 = stack.top();
+				stack.pop();
+
+				
+				double result = eval(op1,op2, ch);
+				stack.push(result);
+				i++;
+				
+			}
+		}
+	}
+	return stack.top();
+}
+
+
+int main() {
+	int dem=2, i = 0;
+	double x,y,z;
+	char giatri;
+	cout << "- Moi nhap x: ";
+	cin >> x;
+	cout << "- Moi nhap y: ";
+	cin >> y;
+	cout << "- Moi nhap z : ";
+	cin >> z;
+	
+	while (i<dem)
+	{
+		string infix;
+		stack<char> b;
+		cout << "- Nhap bieu thuc " << i+1<< ": ";
+		cin >> infix;
+		if (KiemTraXauNgoac(infix, b) == false)
+		{
+			cout << "- Bieu thuc can bang ngoac sai." << endl;
+			continue;
+		}
+		else if (CheckErr(infix) == false)
+		{
+			cout << "- Bieu thuc ko dung." << endl;
+			continue;
+		}
+		else{
+			string postfix = InfixToPostfix(infix);
+			cout<<" Bieu thuc hau to: " << postfix<<endl;
+			giatri = infix[0];
+			if (giatri == 'x')
+			{
+				x = evalPostfix(x, y, z, postfix);
+			}
+			else if (giatri == 'y')
+			{
+				y = evalPostfix(x, y, z, postfix);
+			}
+			else if (giatri == 'z')
+			{
+				z = evalPostfix(x, y, z, postfix);
+			}
+			i++;
+		}
+	}
+	cout << "-----------------------------------------------------------"<<endl; 
+	cout << "- Gia tri x la: " << x <<endl; 
+	cout << "- Gia tri y la: " << y <<endl; 
+	cout << "- Gia tri z la: " << z <<endl; 
+	
+	system("pause");
+
+
+	return 0;
+}
